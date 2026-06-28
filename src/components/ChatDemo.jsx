@@ -6,9 +6,11 @@ import { Bot, Send, User, Sparkles } from 'lucide-react';
 // Uses scripted keyword matching so it works on static hosting with no API key.
 // In a real client deployment this connects to Claude/GPT and the client's own knowledge base.
 
-// Flip to true AFTER deploying api/chat.php with your Anthropic key on the server.
-// While false, the chat uses smart scripted replies (free, no API cost, abuse-proof).
-const LIVE_CHAT = false;
+// Live mode calls the Node /api/chat endpoint (Claude Haiku). If it's unreachable
+// (e.g. local Vite preview with no server, or no API key set), it falls back to the
+// scripted replies automatically — so the widget always works.
+const LIVE_CHAT = true;
+const CHAT_ENDPOINT = '/api/chat';
 
 const SUGGESTIONS = [
   'What can you automate for me?',
@@ -69,7 +71,7 @@ export default function ChatDemo() {
           content: m.text,
         }));
         while (apiMessages.length && apiMessages[0].role !== 'user') apiMessages.shift();
-        const res = await fetch('/api/chat.php', {
+        const res = await fetch(CHAT_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ messages: apiMessages }),

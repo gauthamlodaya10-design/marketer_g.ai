@@ -1,56 +1,53 @@
-# Deploying ai.marketerg.com (GitHub → Hostinger auto-deploy)
+# Deploying ai.marketerg.com (one Node.js app: website + AI chatbot)
 
-Every time you push a change to the `main` branch, GitHub Actions builds the site and
-uploads it to Hostinger automatically. Here's the one-time setup.
+This is **one** Node.js app that serves the website **and** the AI chatbot (`/api/chat`),
+so it uses a single Hostinger slot. The chatbot uses Claude Haiku via `@anthropic-ai/sdk`,
+with the API key kept server-side (never in the code).
 
-## 1. Log into GitHub CLI (you do this once)
-```bash
-gh auth login
+## How it fits together
 ```
-Choose: GitHub.com → HTTPS → login with a browser. Follow the prompts.
-
-## 2. Create the repo and push (run from the project folder)
-```bash
-cd ~/Desktop/marketerg-ai
-gh repo create marketerg-ai --private --source=. --remote=origin --push
+ONE Hostinger Node.js Web App
+  ├─ serves the React build (dist/)        → the website at ai.marketerg.com
+  └─ POST /api/chat  → runs Claude Haiku    → the chatbot brain (key stays server-side)
 ```
-This creates a private GitHub repo and pushes your code. (Claude can run these for you once you're logged in.)
-
-## 3. Get your Hostinger FTP details
-In hPanel → **Files → FTP Accounts**, note:
-- **FTP host/server** (e.g. `ftp.marketerg.com` or an IP)
-- **FTP username**
-- **FTP password** (create/reset one if needed)
-
-Find the **subdomain's folder path** in hPanel → **Files → File Manager**. For a subdomain
-`ai.marketerg.com` it's usually something like:
-`/domains/marketerg.com/public_html/ai/`  ← this is your `FTP_SERVER_DIR`
-
-> First create the subdomain in hPanel → **Domains → Subdomains** → add `ai`. Note the
-> document root it gives you — that exact path is what you put in `FTP_SERVER_DIR`.
-
-## 4. Add the secrets to GitHub
-GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**.
-Add these four:
-
-| Secret name | Value |
-|---|---|
-| `FTP_SERVER` | your FTP host (e.g. `ftp.marketerg.com`) |
-| `FTP_USERNAME` | your FTP username |
-| `FTP_PASSWORD` | your FTP password |
-| `FTP_SERVER_DIR` | the subdomain folder path (e.g. `/domains/marketerg.com/public_html/ai/`) |
-
-⚠️ Never commit these into the code — only store them as GitHub Secrets.
-
-## 5. Done — test it
-Push any change (or use the Actions tab → "Build & Deploy to Hostinger" → Run workflow).
-Watch it build and deploy under the repo's **Actions** tab. When it's green, visit
-`https://ai.marketerg.com`.
+- `server.js` is the app. `npm run build` produces `dist/`; `npm start` runs the server.
+- The chat widget calls `/api/chat` on the same domain (no CORS, no second app).
 
 ---
 
-### Notes
-- The build output is the `dist/` folder; only that gets uploaded.
-- `.htaccess` (in `public/`) handles SPA routing on Hostinger automatically.
-- To deploy the other site (the website agency in `~/Desktop/Marketer-G`), repeat the same
-  steps with its own repo and an `FTP_SERVER_DIR` pointing at the main domain root.
+## One-time setup on Hostinger
+
+1. **Delete the current `ai.marketerg.com` website** (the Custom PHP/HTML one) in hPanel.
+   *(The code is safe in GitHub — you're only removing the hosting entry.)*
+2. **Add website → Node.js Web App → Deploy from GitHub.**
+   - Repo: `gauthamlodaya10-design/marketer_g.ai`, branch `main`
+   - Domain: `ai.marketerg.com` (verify ownership as before)
+   - **Node version:** 18 or higher
+   - **Build command:** `npm run build`
+   - **Start command:** `npm start`  (startup file: `server.js`)
+3. **Add the environment variable** (Node app → Settings → Environment variables):
+   - `ANTHROPIC_API_KEY` = your key from console.anthropic.com
+   - *(Optional)* `PORT` — only if Hostinger requires a specific port; the app reads `process.env.PORT`.
+4. **Deploy.** Hostinger pulls the repo, runs the build, and starts the server.
+
+> If Hostinger's flow has no separate "build command" field, set the start command to
+> `npm run build && npm start` instead, so the build runs before the server boots.
+
+---
+
+## Verify it's live
+- Visit `https://ai.marketerg.com` → the site loads.
+- Visit `https://ai.marketerg.com/api/health` → should return `{"ok":true,"model":"claude-haiku-4-5","ai":true}`.
+  - `ai:true` means the API key is set correctly. If `ai:false`, the env var isn't being read — re-check step 3.
+- Open the chat widget and ask a question → it now answers via Claude (falls back to scripted replies if the API ever errors, so it never breaks).
+
+## Updating the site later
+Push to `main` → Hostinger auto-redeploys (build + restart). That's it.
+
+---
+
+## Cost & safety notes (public AI endpoint)
+- Every chat message costs a small amount (Haiku is cheap). The server already caps each
+  reply (`max_tokens: 400`), trims history (last 10 messages), and rate-limits per IP
+  (20 requests/min). Watch usage in the Anthropic console for the first few days.
+- The API key lives only in the Hostinger env var — it's never in the repo or the browser.
