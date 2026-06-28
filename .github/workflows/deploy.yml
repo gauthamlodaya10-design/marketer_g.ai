@@ -32,6 +32,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dist/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
-          # Keeps the upload clean; remove this line if you store other files in that folder.
+          # This FTP account already logs into the site's docroot, so upload to the login root.
+          server-dir: ./
+          # Wipes the docroot first (clears the old default page + any stray nested folder), then uploads.
           dangerous-clean-slate: true
