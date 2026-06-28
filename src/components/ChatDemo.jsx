@@ -10,7 +10,7 @@ const LIVE_CHAT = false;
 const CHAT_ENDPOINT = '/api/chat';
 
 // Web3Forms — captured leads are emailed here (public access key, safe in client code).
-const WEB3FORMS_KEY = 'ca382c4e-aa98-4bd3-a543-eef3a65aa193';
+const WEB3FORMS_KEY = '71a73b5c-353f-4e1a-bc32-9c6556648f15';
 
 const SUGGESTIONS = [
   'What can you automate for me?',
