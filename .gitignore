@@ -5,6 +5,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Never commit the Claude API key
+public/api/secret.php
+api/secret.php
 .DS_Store
 *.log
 npm-debug.log*

@@ -6,6 +6,10 @@ import { Bot, Send, User, Sparkles } from 'lucide-react';
 // Uses scripted keyword matching so it works on static hosting with no API key.
 // In a real client deployment this connects to Claude/GPT and the client's own knowledge base.
 
+// Flip to true AFTER deploying api/chat.php with your Anthropic key on the server.
+// While false, the chat uses smart scripted replies (free, no API cost, abuse-proof).
+const LIVE_CHAT = false;
+
 const SUGGESTIONS = [
   'What can you automate for me?',
   'Do you build chatbots?',
@@ -44,18 +48,44 @@ export default function ChatDemo() {
     endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }, [messages, typing]);
 
-  const send = (text) => {
+  const send = async (text) => {
     const msg = (text ?? input).trim();
     if (!msg || typing) return;
-    setMessages((m) => [...m, { from: 'user', text: msg }]);
+    const history = [...messages, { from: 'user', text: msg }];
+    setMessages(history);
     setInput('');
     setTyping(true);
-    const reply = getReply(msg);
-    const delay = Math.min(1600, 500 + reply.length * 12);
-    setTimeout(() => {
+
+    const finish = (reply) => {
       setTyping(false);
       setMessages((m) => [...m, { from: 'bot', text: reply }]);
-    }, delay);
+    };
+
+    // Live mode: call the Claude proxy. Falls back to scripted replies on any error.
+    if (LIVE_CHAT) {
+      try {
+        const apiMessages = history.map((m) => ({
+          role: m.from === 'user' ? 'user' : 'assistant',
+          content: m.text,
+        }));
+        while (apiMessages.length && apiMessages[0].role !== 'user') apiMessages.shift();
+        const res = await fetch('/api/chat.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ messages: apiMessages }),
+        });
+        if (!res.ok) throw new Error('proxy error');
+        const data = await res.json();
+        finish(data.reply || getReply(msg));
+        return;
+      } catch {
+        // fall through to scripted reply
+      }
+    }
+
+    const reply = getReply(msg);
+    const delay = Math.min(1600, 500 + reply.length * 12);
+    setTimeout(() => finish(reply), delay);
   };
 
   return (
