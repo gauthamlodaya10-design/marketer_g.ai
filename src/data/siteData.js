@@ -8,7 +8,7 @@ import {
 export const brand = {
   name: 'MarketerG',
   tagline: 'AI that works while you sleep.',
-  email: 'hello@marketerg.com',
+  email: 'contact@ai.marketerg.com',
   // WhatsApp number (intl format, no +).
   whatsapp: '971561552810',
   instagram: 'https://instagram.com/itss.marketer_g',
