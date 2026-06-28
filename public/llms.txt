@@ -1,0 +1,7 @@
+## Pages
+- [Admin Dashboard — marketerg.com](/admindashboard): No description available
+- [Admin Login — marketerg.com](/login): Admin login for marketerg.com
+- [Get a Free AI Audit | MarketerG AI](/contact): Tell us about your business and get a free AI audit — we’ll show you what to automate first and what it’s worth. AI automation, agents and marketing.
+- [MarketerG AI — AI Automation, Agents & Marketing for Businesses](/home): Automate busywork, deploy AI agents, and grow with AI-powered marketing. AI speed, human judgment. Get a free AI audit.
+- [Services — AI Automation, Agents & Marketing | MarketerG AI](/services): Workflow automation, AI agents & chatbots, AI-powered marketing, custom AI solutions, internal AI assistants, and AI strategy.
+- [Solutions & Demos — Real AI Use-Cases | MarketerG AI](/solutions): See real AI solutions in action: 24/7 support bots, instant lead follow-up, and document automation. Try the live AI assistant demo.
