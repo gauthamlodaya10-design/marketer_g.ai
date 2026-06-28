@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bot, Send, User, Sparkles, CheckCircle } from 'lucide-react';
-import { supabase } from '@/lib/customSupabaseClient';
 
 // MarketerG AI chatbot widget.
 // Mode B: scripted replies (free, no API key) + a lead-capture flow that saves
@@ -9,6 +8,9 @@ import { supabase } from '@/lib/customSupabaseClient';
 // To upgrade to real Claude later: set LIVE_CHAT = true and configure /api/chat with a key.
 const LIVE_CHAT = false;
 const CHAT_ENDPOINT = '/api/chat';
+
+// Web3Forms — captured leads are emailed here (public access key, safe in client code).
+const WEB3FORMS_KEY = 'ca382c4e-aa98-4bd3-a543-eef3a65aa193';
 
 const SUGGESTIONS = [
   'What can you automate for me?',
@@ -108,15 +110,21 @@ export default function ChatDemo() {
 
     setSubmitting(true);
     try {
-      await supabase.from('contact_messages').insert([{
-        name,
-        email,
-        company: '',
-        inquiry_type: 'Chatbot Lead',
-        message: `Mobile: ${phone}\nCaptured by the website AI chatbot.`,
-      }]);
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: 'New lead from MarketerG AI chatbot 🎯',
+          from_name: 'MarketerG AI Chatbot',
+          name,
+          email,
+          phone,
+          message: `New website chatbot lead\nName: ${name}\nMobile: ${phone}\nEmail: ${email}`,
+        }),
+      });
     } catch (err) {
-      console.error('lead save error:', err?.message || err);
+      console.error('lead send error:', err?.message || err);
     } finally {
       setSubmitting(false);
       setLeadSent(true);
