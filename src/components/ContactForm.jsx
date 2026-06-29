@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/lib/customSupabaseClient';
+
+// Web3Forms — submissions are emailed to you (same key as the chatbot lead capture).
+const WEB3FORMS_KEY = '71a73b5c-353f-4e1a-bc32-9c6556648f15';
 
 export default function ContactForm() {
   const { toast } = useToast();
@@ -39,11 +41,22 @@ export default function ContactForm() {
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from('contact_messages')
-        .insert([formData]);
-
-      if (error) throw error;
+      const res = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
+          subject: `New contact form — ${formData.inquiry_type}`,
+          from_name: 'MarketerG AI Website',
+          name: formData.name,
+          email: formData.email,
+          company: formData.company,
+          inquiry_type: formData.inquiry_type,
+          message: formData.message,
+        }),
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error('submit failed');
 
       toast({
         title: 'Request Sent!',
