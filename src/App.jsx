@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import HomePage from '@/pages/HomePage';
 import ServicesPage from '@/pages/ServicesPage';
 import SolutionsPage from '@/pages/SolutionsPage';
+import DemosPage from '@/pages/DemosPage';
 import ContactPage from '@/pages/ContactPage';
 import LoginPage from '@/pages/LoginPage';
 import AdminDashboard from '@/pages/AdminDashboard';
@@ -23,6 +24,7 @@ function AnimatedRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/solutions" element={<SolutionsPage />} />
+        <Route path="/demos" element={<DemosPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/admin/login" element={<LoginPage />} />
         <Route
